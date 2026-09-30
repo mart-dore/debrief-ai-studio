@@ -1,0 +1,24 @@
+# Environnement lourd (polices, modèle Whisper) : voir _env/README.md
+_env/*
+!_env/README.md
+
+# Médias propres à chaque épisode
+*.wav
+*.m4a
+*.mp3
+*.mp4
+*.ass
+audio_filter.txt
+parts.txt
+frames/
+sfx/
+img/
+ctrl/
+
+# Graphiques capturés pour les carrousels (sources tierces)
+carrousel_*/c_*.png
+
+# Python
+__pycache__/
+*.pyc
+.venv/
