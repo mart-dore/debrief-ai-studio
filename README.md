@@ -27,7 +27,7 @@ Le même socle produit aussi des **carrousels photo TikTok** (benchmarks de mod�
 | **Entrée** | Voix off (`.wav` / `.m4a`) + storyboard | Données vérifiées + graphiques capturés |
 | **Sortie** | MP4 H.264 1080×1920, 30 i/s, sous-titres incrustés | 10 à 12 PNG 1080×1920 |
 | **Durée de rendu** | ~1 min 30 de vidéo en quelques minutes (rendu parallèle) | Quelques secondes |
-| **Point d'entrée** | `jour13/` (modèle) · `jour19/` (épisode complet) | `carrousel_*/gen.py` + `_lib.py` |
+| **Point d'entrée** | `jour23_mascotte/` (modèle actuel, avec mascotte) · `jour23/` · `jour19/` | `carrousel_*/gen.py` + `_lib.py` |
 
 ## Fonctionnalités
 
@@ -36,6 +36,8 @@ Le même socle produit aussi des **carrousels photo TikTok** (benchmarks de mod�
 - **Animation synchronisée sur la parole** : chaque animation est calée sur le mot prononcé (`at(passage, fraction)` → `cues_final.json`).
 - **Moteur d'animation Canvas 2D** déterministe (`draw(t)`) : schémas, courbes, cartes de logos, tampons, ondes de choc, glitch, écran d'abonnement.
 - **Rendu headless** image par image avec Playwright/Chromium, **parallélisé** sur `cpu_count // 2` processus (120 images en ~7 s sur 4 processus).
+- **Mascotte de la chaîne** : la bulle `>_` du logo devenue personnage (`mascotte.js`), bouche synchronisée sur la voix (enveloppe du signal, 30 valeurs/s) et réactions calées sur les mots forts (montre du doigt, contente, réfléchit, choquée).
+- **Traitement de voix** : égalisation (passe-haut 120 Hz, creux dans le bas-médium, présence +4 dB à 3,5 kHz), compression douce et normalisation à −14 LUFS.
 - **Sous-titres incrustés** au format ASS (libass) : Inter ExtraBold, mots-clés en couleur, découpage ≤ 30 caractères avec groupes protégés.
 - **Bruitages synthétisés** procéduralement en NumPy (whoosh, pop, impact, riser, glitch…), sans aucun fichier sonore externe.
 - **Carrousels « safe-zone aware »** : contenu contraint à la zone non recouverte par l'interface TikTok, avec un mode de contrôle `SAFE=1` qui superpose les zones masquées.
@@ -79,7 +81,14 @@ flowchart LR
 │   ├── debrief-ia-video/SKILL.md            # méthode vidéo : script, storyboard, calage, style
 │   └── carrousel-tiktok-debrief-ia/SKILL.md # méthode carrousel : structure, zone visible, DA
 │
-├── jour13/                  # ⭐ modèle de référence des vidéos quotidiennes
+├── jour23_mascotte/         # ⭐ modèle de référence actuel : épisode Mistral + mascotte
+│   ├── mascotte.js          #   personnage (3 designs, expressions, gestes)
+│   ├── anim_mascotte_ep.js  #   chorégraphie de l'épisode + mise en page réduite
+│   └── planche_mascotte.html #  planche de comparaison des designs
+│
+├── jour23/                  # épisode Mistral sans mascotte (anim_base.js + anim_ep.js)
+│
+├── jour13/                  # ancien modèle des vidéos quotidiennes
 │   ├── index.html           #   canvas 1080×1920 + polices Inter
 │   ├── anim.js              #   moteur d'animation + scènes de l'épisode
 │   ├── montage.py           #   resserrement, repères, rendu, sous-titres, assemblage
@@ -137,14 +146,16 @@ Installer ensuite les polices et le modèle Whisper dans `_env/` en suivant [`_e
 ### Produire une vidéo
 
 ```bash
-cp -r jour13 jour20 && cd jour20
-ffmpeg -i ../../voix/20-365.m4a -ac 1 -ar 48000 voix_brute.wav
+cp -r jour23_mascotte jour24 && cd jour24
+ffmpeg -i ../../voix/24-365.m4a -ac 1 -ar 48000 voix_brute.wav
 
 python transcrire.py                  # → runs_texte.json (SEUIL=-30 DMIN=0.4 si la prise est bruitée)
 python fenetre.py 3.4-5.9             # lever un doute sur un mot
-# … écrire txt.py (texte réellement dit) et les scènes de anim.js
+# … écrire txt.py (texte réellement dit), les scènes de anim_ep.js et la chorégraphie MSEQ de anim_mascotte_ep.js
+python sfx.py                         # bruitages → sfx/
+cat anim_base.js anim_ep.js mascotte.js anim_mascotte_ep.js > anim.js
 
-DRY=1 python montage.py               # voix resserrée + cues_final.json
+DRY=1 python montage.py               # voix resserrée + cues_final.json (repères + bouche de la mascotte)
 python render.py ctrl/c cues_final.json 1,4.5,12
 python planche.py ctrl/planche.png ctrl/c_*.png   # vérifier les images de contrôle
 
