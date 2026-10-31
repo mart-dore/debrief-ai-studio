@@ -1,0 +1,22 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+@font-face{font-family:'Inter';font-weight:700;src:url('../_env/fonts/Inter-Bold.otf');}
+@font-face{font-family:'Inter';font-weight:800;src:url('../_env/fonts/Inter-ExtraBold.otf');}
+html,body{margin:0;background:#000}</style></head><body><canvas id="c" width="2300" height="1560"></canvas>
+<script src="anim_base.js"></script><script src="mascotte.js"></script>
+<script>
+async function go(){
+ await document.fonts.load('800 40px Inter'); await document.fonts.load('700 30px Inter');
+ const cw=2300,ch=1560; const g=X.createLinearGradient(0,0,0,ch); g.addColorStop(0,'#1d1e27'); g.addColorStop(1,'#0f1018'); X.fillStyle=g; X.fillRect(0,0,cw,ch);
+ const D=[['A','A · Bulle'],['B','B · Terminal-bot'],['C','C · Blob']];
+ const E=[['logo','none',0,'neutre (>_)'],['neutre','none',0.8,'parle'],['content','cheer',0.5,'content'],['choque','cheeks',0.6,'choqué'],['reflechit','chin',0,'réfléchit'],['malin','pointR',0.3,'montre du doigt'],['decu','none',0.2,'déçu']];
+ D.forEach(([d,name],r)=>{
+   txt(name,40,105+r*500,'800 46px Inter','#ECECF0','left');
+   E.forEach(([ex,arm,m,lb],c)=>{
+     const x=170+c*318, y=440+r*500;
+     mascot(d,x,y,0.78,{expr:ex,arm:arm,mouth:m,t:0.6+c,look:ex==='reflechit'?[0.6,-0.8]:[0,0]});
+     txt(lb,x,y+48,'700 28px Inter','#9698A2','center');
+   });
+ });
+}
+window.go=go;
+</script></body></html>
